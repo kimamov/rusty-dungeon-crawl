@@ -1,10 +1,12 @@
 mod map;
+mod map_builder;
 
 mod prelude {
     pub use bracket_lib::prelude::*;
     pub const SCREEN_WIDTH: i32 = 80;
     pub const SCREEN_HEIGHT: i32 = 50;
     pub use crate::map::*;
+    pub use crate::map_builder::*;
 }
 
 use prelude::*;
@@ -16,9 +18,11 @@ struct State {
 
 impl State {
     fn new() -> Self {
+        let mut rng = RandomNumberGenerator::new();
+        let map_builder = MapBuilder::new(&mut rng);
         Self {
-            map: Map::new(),
-            player: Player::new(Point::new(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)),
+            map: map_builder.map,
+            player: Player::new(map_builder.player_start),
         }
     }
 }
@@ -26,7 +30,9 @@ impl State {
 impl GameState for State {
     fn tick(&mut self, ctx: &mut BTerm) {
         ctx.cls();
+        self.player.update(ctx, &self.map);
         self.map.render(ctx);
+        self.player.render(ctx);
     }
 }
 
@@ -52,8 +58,8 @@ impl Player {
             let delta = match key {
                 VirtualKeyCode::Left => Point::new(-1, 0),
                 VirtualKeyCode::Right => Point::new(1, 0),
-                VirtualKeyCode::Up => Point::new(0, 1),
-                VirtualKeyCode::Down => Point::new(0, -1),
+                VirtualKeyCode::Up => Point::new(0, -1),
+                VirtualKeyCode::Down => Point::new(0, 1),
                 _ => Point::zero(),
             };
             let new_position = self.position + delta;
