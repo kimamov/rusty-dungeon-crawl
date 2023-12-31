@@ -11,3 +11,12 @@ pub struct Player;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Enemy;
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Projectile;
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Velocity {
+    pub dx: i32,
+    pub dy: i32,
+}

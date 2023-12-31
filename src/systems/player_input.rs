@@ -5,6 +5,7 @@ use crate::{map, prelude::*};
 #[read_component(Player)]
 pub fn player_input(
     ecs: &mut SubWorld,
+    commands: &mut CommandBuffer,
     #[resource] map: &Map,
     #[resource] key: &Option<VirtualKeyCode>,
     #[resource] camera: &mut Camera,
@@ -17,13 +18,25 @@ pub fn player_input(
             VirtualKeyCode::Down => Point::new(0, 1),
             _ => Point::new(0, 0),
         };
-        if delta.x != 0 || delta.y != 0 {
+        if delta.x != 0 || delta.y != 0 || VirtualKeyCode::Space == *key {
             let mut players = <&mut Point>::query().filter(component::<Player>());
             players.iter_mut(ecs).for_each(|pos| {
-                let destination = *pos + delta;
-                if map.can_enter_tile(destination) {
-                    *pos = destination;
-                    camera.on_player_move(destination);
+                if VirtualKeyCode::Space == *key {
+                    commands.push((
+                        Projectile,
+                        *pos,
+                        Velocity { dx: 1, dy: 1 },
+                        Render {
+                            color: ColorPair::new(WHITE, BLACK),
+                            glyph: to_cp437('a'),
+                        },
+                    ));
+                } else {
+                    let destination = *pos + delta;
+                    if map.can_enter_tile(destination) {
+                        *pos = destination;
+                        camera.on_player_move(destination);
+                    }
                 }
             })
         }
